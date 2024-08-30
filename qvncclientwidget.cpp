@@ -9,7 +9,7 @@ QVNCClientWidget::QVNCClientWidget(SocketType type,QWidget *parent) :
     setCursor(Qt::ArrowCursor); // 显示鼠标
     m_socketThread = new SocketThread(type,this);
     m_state = Disconnected;
-    connect(m_socketThread, SIGNAL(socketReadyRead()), this, SLOT(onServerMessage()));
+    connect(m_socketThread, &SocketThread::socketReadyRead, this, &QVNCClientWidget::onServerMessage);
     connect(m_socketThread, &SocketThread::disConnect, this, [&]() {
                 disconnectFromVncServer();
                 screen.fill(Qt::black);
@@ -24,6 +24,10 @@ QVNCClientWidget::~QVNCClientWidget()
 {
     disconnectFromVncServer();
     delete m_socketThread;
+}
+
+void QVNCClientWidget::autoFWin(bool aw){
+    autoWin = aw;
 }
 
 void QVNCClientWidget::automouse(bool mouse){
@@ -52,8 +56,7 @@ bool QVNCClientWidget::isConnectedToServer()
     return m_socketThread->isConnectedToServer();
 }
 
-void QVNCClientWidget::disconnectFromVncServer()
-{
+void QVNCClientWidget::disconnectFromVncServer(){
     m_state = Disconnected;
     m_socketThread->disconnectFromVncServer();
 }
@@ -75,8 +78,7 @@ bool QVNCClientWidget::sendSetPixelFormat()
     setpixfmt.pixfmt.greenMax = qToBigEndian(pixelFormat.greenMax);
     setpixfmt.pixfmt.blueMax = qToBigEndian(pixelFormat.blueMax);
 
-    if (m_socketThread->write((char *)&setpixfmt, sizeof(setpixfmt)) != sizeof(setpixfmt))
-    {
+    if (m_socketThread->write((char *)&setpixfmt, sizeof(setpixfmt)) != sizeof(setpixfmt)) {
         qDebug("fail to set pixel format");
         return false;
     }
@@ -180,14 +182,10 @@ void QVNCClientWidget::screenShot(const QString &fileName)
 }
 
 
-void QVNCClientWidget::resizeEvent(QResizeEvent *e)
-{
-    if (isScaled)
-    {
+void QVNCClientWidget::resizeEvent(QResizeEvent *e){
+    if (isScaled){
         paintTargetX = paintTargetY = 0;
-    }
-    else
-    {
+    } else {
         qint32 x = 0, y = 0;
         if (screen.width() && screen.width() < this->geometry().width())
             x = (this->geometry().width() - screen.width()) / 2;
@@ -196,6 +194,7 @@ void QVNCClientWidget::resizeEvent(QResizeEvent *e)
         paintTargetX = x;
         paintTargetY = y;
     }
+
     QWidget::resizeEvent(e);
 }
 
@@ -381,7 +380,10 @@ void QVNCClientWidget::onServerMessage()
 
             m_socketThread->read(4); // name-length
             response = m_socketThread->readAll();
-
+            if( autoWin ){
+                frameBufferWidth = width();
+                frameBufferHeight = height();
+            }
             screen = QImage(frameBufferWidth, frameBufferHeight, QImage::Format_RGB32);
             sendSetEncodings();
             sendSetPixelFormat();
@@ -634,8 +636,7 @@ quint8 QVNCClientWidget::translateRfbPointer(unsigned int mouseStatus, int &posX
         buttonMask |= 0x02;
     if (mouseStatus & Qt::RightButton)
         buttonMask |= 0x04;
-    if (isScaled)
-    {
+    if (isScaled) {
         posX = static_cast<int>((double(posX) / double(width())) * double(frameBufferWidth));
         posY = static_cast<int>((double(posY) / double(height())) * double(frameBufferHeight));
     }

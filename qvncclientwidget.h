@@ -81,6 +81,7 @@ public:
     explicit QVNCClientWidget(QWidget *parent = 0) : QVNCClientWidget(TCP, parent) {}
     ~QVNCClientWidget();
 
+    void autoFWin(bool aw);
     void automouse(bool mouse);
     void setType(SocketType type);
     void connectToVncServer(QString ip, QString password, int port = 5900);
@@ -144,6 +145,7 @@ private:
     int paintTargetX, paintTargetY;
     bool isScaled;
     bool amouse = true;
+    bool autoWin = true;
 
     RFBProtol::PixelFormat pixelFormat;
 
