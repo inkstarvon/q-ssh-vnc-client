@@ -14,6 +14,7 @@ QVNCClientWidget::QVNCClientWidget(SocketType type,QWidget *parent) :
                 disconnectFromVncServer();
                 screen.fill(Qt::black);
                 update();
+                if( amouse ) setCursor(Qt::ArrowCursor);
                 emit connected(false);
             }
         );
@@ -23,6 +24,15 @@ QVNCClientWidget::~QVNCClientWidget()
 {
     disconnectFromVncServer();
     delete m_socketThread;
+}
+
+void QVNCClientWidget::automouse(bool mouse){
+    amouse = mouse;
+    if( isConnectedToServer() && amouse ){
+        setCursor(Qt::BlankCursor);
+    } else {
+        setCursor(Qt::ArrowCursor);
+    }
 }
 
 void QVNCClientWidget::setType(SocketType type)
@@ -375,6 +385,7 @@ void QVNCClientWidget::onServerMessage()
             screen = QImage(frameBufferWidth, frameBufferHeight, QImage::Format_RGB32);
             sendSetEncodings();
             sendSetPixelFormat();
+            if( amouse ) setCursor(Qt::BlankCursor);
             emit connected(true);
             startFrameBufferUpdate();
             m_state = Connected;
