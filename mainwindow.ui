@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>烽云电台远程控制</string>
+   <string>Ink远程控制</string>
   </property>
   <property name="styleSheet">
    <string notr="true">QPushButton:hover{
@@ -377,7 +377,6 @@ background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
        <property name="font">
         <font>
          <family>文泉驿等宽微米黑</family>
-         <weight>50</weight>
          <bold>false</bold>
         </font>
        </property>

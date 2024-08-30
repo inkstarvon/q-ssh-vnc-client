@@ -1,5 +1,5 @@
 
-QT       += core gui network
+QT       += core gui network websockets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -10,17 +10,17 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    qannconsole.cpp \
-    qsshsocket.cpp \
-    qvncclientwidget.cpp
+        qannconsole.cpp \
+        qsshsocket.cpp \
+        qvncclientwidget.cpp
 
 HEADERS  += mainwindow.h \
-    qannconsole.h \
-    qsshsocket.h \
-    qvncclientwidget.h
+        qannconsole.h \
+        qsshsocket.h \
+        qvncclientwidget.h
 
 FORMS    += mainwindow.ui \
-    dialog_setting.ui
+        dialog_setting.ui
 
 #LIBS += -lssh
 win32{

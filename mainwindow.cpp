@@ -40,16 +40,16 @@ MainWindow::MainWindow(QWidget *parent) :
         Ui::Dialog setting_ui;
         setting_ui.setupUi(&dialog);
         setting_ui.hostip->setText(cfg->value("hostip","127.0.0.1").toString());
-        setting_ui.vnc_ip->setText(cfg->value("vncip","127.0.0.1").toString());
         setting_ui.ssh_port->setText(cfg->value("ssh_port","22").toString());
+        setting_ui.vnc_ip->setText(cfg->value("vncip","127.0.0.1").toString());
         setting_ui.vnc_port->setText(cfg->value("vnc_port","9991").toString());
         setting_ui.username->setText(cfg->value("username","").toString());
         setting_ui.passwd->setText(cfg->value("passwd","").toString());
         setting_ui.uploadDir->setText(cfg->value("uploadDir","/tmp/").toString());
         if(dialog.exec()==QDialog::Accepted){
             cfg->setValue("hostip",setting_ui.hostip->text());
-            cfg->setValue("vncip",setting_ui.vnc_ip->text());
             cfg->setValue("ssh_port",setting_ui.ssh_port->text());
+            cfg->setValue("vncip",setting_ui.vnc_ip->text());
             cfg->setValue("vnc_port",setting_ui.vnc_port->text());
             cfg->setValue("username",setting_ui.username->text());
             cfg->setValue("passwd",setting_ui.passwd->text());
@@ -57,6 +57,9 @@ MainWindow::MainWindow(QWidget *parent) :
         }
     });
     connect(ssh, &QSshSocket::commandExecuted, this, [=](QString s1,QString s2){
+        if(!s1.isEmpty()){
+            qDebug() << " --- " << s2;
+        }
         if(!s2.isEmpty()){
             ui->console << s2;
         }
@@ -69,7 +72,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->vncView,&QVNCClientWidget::connected,[&](bool b){
         ui->btnRemoteCtrl->setText(b?"断开远程":"远程控制");
         if(b){
-            setWindowTitle(ui->vncView->getServerMsg());
+            // setWindowTitle(ui->vncView->getServerMsg());
         }
     });
 
@@ -114,7 +117,7 @@ void MainWindow::on_btnConnect_pressed()
         passwd = cfg->value("passwd").toString();
         hostip = cfg->value("hostip").toString();
         hostport = cfg->value("ssh_port").toString();
-        if(hostip.isEmpty()||username.isEmpty() || hostport){
+        if(hostip.isEmpty()||username.isEmpty() || hostport.isEmpty() ){
             ui->statusBar->showMessage("温馨提示：请先设置连接参数");
             return;
         }
@@ -171,9 +174,11 @@ void MainWindow::on_btnRemoteCtrl_clicked()
          ui->vncView->disconnectFromVncServer();
     }
     else{
-        if(ui->vncView->connectToVncServer(cfg->value("vncip").toString(), "",cfg->value("vnc_port").toInt())) {
-            ui->vncView->startFrameBufferUpdate();
-        }
+        ui->vncView->setType(QVNCClientWidget::TCP);
+        // vncView->setType(QVNCClientWidget::WEBSOCKET);
+        ui->vncView->connectToVncServer(cfg->value("vncip").toString(), "",cfg->value("vnc_port").toInt());
+        ui->vncView->startFrameBufferUpdate();
+
     }
     ui->btnRemoteCtrl->setEnabled(true);
 }
